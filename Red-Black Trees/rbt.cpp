@@ -40,6 +40,7 @@ class rbt{
         node * root;
         int noOfNodes, noOfRedNodes;
         void insertRBT(int tbi);
+        void findRot(node * temp);
         void displayRBT(node * temp);
 };
 
@@ -200,11 +201,11 @@ void rbt::insertRBT(int tbi){
 
 //-----------------------------------SET OF DELETION FUNCTIONS------------------------------------//
 //function to find the deletion defect type and correct
-void findRot(node * temp){
+/*void findRot(node * temp){
     if(temp->parent==NULL){
         //temp is root
-        delete temp;
         this->root = NULL;
+        delete temp;
     } else {
         node * py,v,a,b,y;
         int x,c,n;   //x (o for left and 1 for right)  c (0 for black and 1 for red)  n (no of red child of v)
@@ -212,13 +213,32 @@ void findRot(node * temp){
         py = y->parent;
         if(y->data > py->data){
             v = py->left;
+            x = 1;
         } else {
             v = py->right;
+            x = 0;
         }
         a = v->left;
         b = v->right;
         c = v->color;
-        if()
+        if(v->left->color)      n++;
+        if(v->right->color)     n++;
+        if(c==0){
+            if(n==0){
+                c->color = 1;
+                if(py->color==1){
+                    py->color = 0;
+                    return;
+                } else {
+                    py->color = 0;
+                    findRot(py);
+                }
+            } else if (n==1) {
+
+            }
+        } else {
+
+        }
     }
 }
 //Main function to delete from RBT
@@ -265,7 +285,7 @@ void rbt::deleteRBT(int tbd){
     //Now we have dealed with all the cases in which red node was deleted
     //Now we have to delete an ext. node temp which is a black node
     this->findRot(temp);
-}
+}*/
 //-----------------------------------END OF DELETION FUNCTIONS------------------------------------//
 
 //-----------------------------------SET OF FUNCTIONS TO DISPLAY TREE-----------------------------------//
@@ -275,10 +295,12 @@ void rbt::insQueue(node * temp){
     myNode->content = temp;
     if(this->start==NULL){
         this->start = myNode;
+        this->finish = myNode;
     } else {
         this->finish->next = myNode;
+        myNode->next = NULL;
+        this->finish = myNode;
     }
-    myNode->next = this->finish;
 }
 //Function to remove from the queue
 node * rbt::delQueue(){
