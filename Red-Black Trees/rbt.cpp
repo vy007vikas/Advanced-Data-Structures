@@ -39,58 +39,65 @@ class rbt{
         //For the red-black tree
         node * root;
         int noOfNodes, noOfRedNodes;
+        void rotateLL(node * gp, int z);
+        void rotateRR(node * gp, int z);
+        void rotateLR(node * gp, int z);
+        void rotateRL(node * gp, int z);
+        void checkRotation(node * temp);
+        node * findPos(int tbi,node * temp);
         void insertRBT(int tbi);
         void findRot(node * temp);
         void displayRBT(node * temp);
 };
 
 //-----------------------------------SET OF ROTATION FUNCTIONS-----------------------------------//
-void rotateLL(node * gp,int z){
+void rbt::rotateLL(node * gp,int z){
     cout<<"LL"<<endl;
-    node * ggp = gp->parent;
     node * pp = gp->left;
-    if(z==1)    ggp->right = pp;
-    else        ggp->left = pp;
+    if(z>=0){
+        node * ggp = gp->parent;
+        if(z==1)    ggp->right = pp;
+        else        ggp->left = pp;
+        pp->parent = ggp;
+    } else {
+        this->root = pp;
+        pp->parent = NULL;
+    }
     gp->parent = pp;
     gp->left = pp->right;
+    pp->right = gp;
 }
-void rotateRR(node * gp,int z){
+void rbt::rotateRR(node * gp,int z){
     cout<<"RR"<<endl;
-    node * ggp = gp->parent;
     node * pp = gp->right;
-    if(z==1)    ggp->right = pp;
-    else        ggp->left = pp;
+    if(z>=0){
+        node * ggp = gp->parent;
+        if(z==1)    ggp->right = pp;
+        else        ggp->left = pp;
+        pp->parent = ggp;
+    } else {
+        this->root = pp;
+        pp->parent = NULL;
+    }
     gp->parent = pp;
     gp->right = pp->left;
+    pp->left = gp;
 }
-void rotateLR(node * gp,int z){
-    cout<<"LR"<<endl;
-    node * ggp = gp->parent;
-    node * p = gp->left->right;
-    if(z==1)    ggp->right = p;
-    else        ggp->left = p;
-    gp->left->right = gp->left->right->left;
-    gp->left->parent = p;
-    gp->left = gp->left->right->right;
-    gp->parent = gp;
+void rbt::rotateLR(node * gp,int z){
+    this->rotateRR(gp->left,0);
+    this->rotateLL(gp,z);
 }
-void rotateRL(node * gp,int z){
-    cout<<"RL"<<endl;
-    node * ggp = gp->parent;
-    node * p = gp->left->right;
-    if(z==1)    ggp->right = p;
-    else        ggp->left = p;
-    gp->right->left = gp->right->left->right;
-    gp->right->parent = p;
-    gp->right = gp->right->left->left;
-    gp->parent = gp;
+void rbt::rotateRL(node * gp,int z){
+    this->rotateLL(gp->right,1);
+    this->rotateRR(gp,z);
 }
 //-----------------------------------END OF ROTATION FUNCTIONS-----------------------------------//
 
 //-----------------------------------SET OF INSERTION FUNCTIONS-----------------------------------//
 //Function to find location and type of deformity and find the type of rotation required
-void checkRotation(node * temp){
+void rbt::checkRotation(node * temp){
     //-----------------------------------Finding the defect location-----------------------------------//
+    cout<<"checkRotation"<<endl;
     node * temp2 = temp;
     while(temp->parent!=NULL){
         if(temp->color==1){
@@ -116,18 +123,20 @@ void checkRotation(node * temp){
         if(p->data > pp->data)      y = 1;
         else    y = 0;
         //Now we have to find r
-        if(x=1){
+        if(x==1){
             t = gp->left;
-            if(t->color==0)      r=0;
+            if(!t)      r=0;
+            else if(t->color==0)      r=0;
             else        r=1;
         } else {
             t = gp->right;
-            if(t->color==0)     r=0;
+            if(!t)      r=0;
+            else if(t->color==0)     r=0;
             else        r=1;
         }
         //-----------------------------------Doing the real rotation--------------------------------------//
         //If XYr , r=1 then no need of rotation only color change will work
-        if(r=1){
+        if(r==1){
             if(gp->parent!=NULL){
                 //gp is not root
                 gp->color = 1;
@@ -139,33 +148,42 @@ void checkRotation(node * temp){
         } else {
             //all the rotations are done in this else part
             //Initializations
-            node * ggp = gp->parent;
             int z;
-            if(gp->data > ggp->data)        z=1;
-            else        z=0;
-            //Basic color changes required
-            pp->color = 0;
-            gp->color = 1;
-            if(x==0 && y==0){
-                rotateLL(gp,z);
-            } else if (x==0 && y==1){
-                rotateLR(gp,z);
-            } else if (x==1 && y==0){
-                rotateRL(gp,z);
+            if(gp->parent){
+                node * ggp = gp->parent;
+                if(gp->data > ggp->data)        z=1;
+                else        z=0;
             } else {
-                rotateRR(gp,z);
+                z = -1;
+            }
+            if(x==0 && y==0){
+                pp->color = 0;
+                gp->color = 1;
+                this->rotateLL(gp,z);
+            } else if (x==0 && y==1){
+                p->color = 0;
+                gp->color = 1;
+                this->rotateLR(gp,z);
+            } else if (x==1 && y==0){
+                p->color = 0;
+                gp->color = 1;
+                this->rotateRL(gp,z);
+            } else {
+                pp->color = 0;
+                gp->color = 1;
+                this->rotateRR(gp,z);
             }
         }
     }
 }
 //Function to find the position where is the element is to be inserted in the bst
-node * findPos(int tbi,node * temp){
+node * rbt::findPos(int tbi,node * temp){
     if(tbi > temp->data){
         //If there is a right node recurse at that node or else return this node
-        if(temp->right!=NULL)       return findPos(tbi,temp->right);
+        if(temp->right!=NULL)       return this->findPos(tbi,temp->right);
         else        return temp;
     } else {
-        if(temp->left!=NULL)        return findPos(tbi,temp->left);
+        if(temp->left!=NULL)        return this->findPos(tbi,temp->left);
         else        return temp;
     }
 }
@@ -184,7 +202,7 @@ void rbt::insertRBT(int tbi){
         cout<<"Element inserted"<<endl;
         return;
     } else {
-        temp = findPos(tbi,this->root);
+        temp = this->findPos(tbi,this->root);
         myNode->parent = temp;
         myNode->color = 1;
         if(tbi > temp->data){
@@ -194,7 +212,7 @@ void rbt::insertRBT(int tbi){
         }
     }
     //Now we need to check for rotations
-    checkRotation(myNode);
+    this->checkRotation(myNode);
     cout<<"Element inserted"<<endl;
 }
 //-----------------------------------END OF INSERTION FUNCITONS-----------------------------------//
@@ -313,7 +331,8 @@ node * rbt::delQueue(){
 //Main function to display the red-black tree
 void rbt::displayRBT(node * temp){
     if(!temp)   return;
-    cout<<"     "<<temp->data<<"("<<temp->color<<")";
+    cout<<"     "<<"("<<temp->color<<")"<<temp->data;
+    if(temp->parent)    cout<<"{"<<temp->parent->data<<"}";
     if(temp->left)      this->insQueue(temp->left);
     if(temp->right)     this->insQueue(temp->right);
     while(this->start!=NULL)    this->displayRBT(delQueue());
@@ -352,6 +371,7 @@ int main(){
                 break;
             case 5:
                 leave = true;
+                break;
             default:
                 cout<<"Invalid choice.Select again."<<endl;
                 break;
