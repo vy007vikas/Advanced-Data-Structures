@@ -46,7 +46,9 @@ class rbt{
         void checkRotation(node * temp);
         node * findPos(int tbi,node * temp);
         void insertRBT(int tbi);
+        void removeRBT(node * temp,int z);
         void findRot(node * temp);
+        void deleteRBT(int tbd);
         void displayRBT(node * temp);
 };
 
@@ -97,7 +99,6 @@ void rbt::rotateRL(node * gp,int z){
 //Function to find location and type of deformity and find the type of rotation required
 void rbt::checkRotation(node * temp){
     //-----------------------------------Finding the defect location-----------------------------------//
-    cout<<"checkRotation"<<endl;
     node * temp2 = temp;
     while(temp->parent!=NULL){
         if(temp->color==1){
@@ -218,14 +219,20 @@ void rbt::insertRBT(int tbi){
 //-----------------------------------END OF INSERTION FUNCITONS-----------------------------------//
 
 //-----------------------------------SET OF DELETION FUNCTIONS------------------------------------//
+//function to remove the node premanently
+void rbt::removeRBT(node * temp,int z){
+    if(z==-1)       this->root = NULL;
+    else if(z==1)   temp->parent->right = NULL;
+    else            temp->parent->left = NULL;
+}
 //function to find the deletion defect type and correct
-/*void findRot(node * temp){
+void rbt::findRot(node * temp){
     if(temp->parent==NULL){
         //temp is root
         this->root = NULL;
         delete temp;
     } else {
-        node * py,v,a,b,y;
+        node * py, * v, * a, * b, * y;
         int x,c,n;   //x (o for left and 1 for right)  c (0 for black and 1 for red)  n (no of red child of v)
         y = temp;
         py = y->parent;
@@ -243,7 +250,7 @@ void rbt::insertRBT(int tbi){
         if(v->right->color)     n++;
         if(c==0){
             if(n==0){
-                c->color = 1;
+                v->color = 1;
                 if(py->color==1){
                     py->color = 0;
                     return;
@@ -272,38 +279,51 @@ void rbt::deleteRBT(int tbd){
         //If there is no child
         if(temp->color==1){
             //If the red node is deleted
-            delete temp;
+            int z;
+            if(temp->parent){
+                if(temp->parent->data > temp->data)     z=0;
+                else        z=1;
+            } else {
+                z=-1;
+            }
+            this->removeRBT(temp,z);
             return;
         }
     } else if(!temp->left){
         //If there is a right child
         //Find the dummy
         node * dummy = temp->right;
-        while(dummy)     dummy = dummy->left;
+        while(dummy->left)     dummy = dummy->left;
+        int z;
+        if(temp->right == dummy)    z=1;
+        else        z=0;
         temp->data = dummy->data;
         temp = dummy;
         if(temp->color==1){
             //if the red node is deleted
-            delete temp;
+            this->removeRBT(temp,z);
             return;
         }
     } else {
         //There is a left child
         //Find the dummy
         node * dummy = temp->left;
-        while(dummy)     dummy = dummy->right;
+        while(dummy->right)     dummy = dummy->right;
+        int z;
+        if(temp->left == dummy)    z=0;
+        else        z=1;
         temp->data = dummy->data;
         temp = dummy;
         if(temp->color==1){
             //if the red node is deleted
-            delete temp;
+            this->removeRBT(temp,z);
             return;
         }
     }
     //Now we have dealed with all the cases in which red node was deleted
     //Now we have to delete an ext. node temp which is a black node
     this->findRot(temp);
-}*/
+}
 //-----------------------------------END OF DELETION FUNCTIONS------------------------------------//
 
 //-----------------------------------SET OF FUNCTIONS TO DISPLAY TREE-----------------------------------//
@@ -365,9 +385,9 @@ int main(){
                 //search(no);
                 break;
             case 4:
-                //cout<<"Enter the element to be deleted."<<endl;
-                //cin>>no;
-                //deletenode(no);
+                cout<<"Enter the element to be deleted."<<endl;
+                cin>>no;
+                myTree->deleteRBT(no);
                 break;
             case 5:
                 leave = true;
